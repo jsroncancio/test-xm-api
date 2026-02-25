@@ -1,26 +1,23 @@
-name: Monitor Diario Transicion
+name: Test Visualizacion Datos
 
 on:
-  schedule:
-    - cron: '0 15 * * *' # Se ejecuta a las 10:00 AM hora Colombia
-  workflow_dispatch:
+  workflow_dispatch: # Ejecución manual desde la pestaña Actions
 
 jobs:
-  run_monitor:
+  diagnostico_consola:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout del repositorio
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Instalacion de Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
-        # IMPORTANTE: Mantener estas versiones para que pydataxm funcione
+      - name: Instalacion de dependencias controladas
         run: |
-          pip install numpy==1.23.5 pandas==1.5.3 pydataxm requests
+          pip install numpy==1.23.5 pandas==1.5.3 pydataxm
 
-      - name: Execute Monitor
+      - name: Ejecucion del Script de Prueba
         run: python monitor_brecha.py
