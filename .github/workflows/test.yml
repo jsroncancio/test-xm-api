@@ -1,23 +1,26 @@
 name: Test Visualizacion Datos
 
 on:
-  workflow_dispatch: # Ejecución manual desde la pestaña Actions
+  workflow_dispatch: # Permite la ejecución manual desde la pestaña Actions
 
 jobs:
-  diagnostico_consola:
+  diagnostico:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v4
 
-      - name: Instalacion de Python
+      - name: Configurar Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      - name: Instalacion de dependencias controladas
+      - name: Instalacion de dependencias (Versiones Controladas)
+        # Forzamos estas versiones para evitar el error de 'M' en Pandas 
+        # y la incompatibilidad binaria con Numpy.
         run: |
           pip install numpy==1.23.5 pandas==1.5.3 pydataxm
 
-      - name: Ejecucion del Script de Prueba
-        run: python monitor_brecha.py
+      - name: Ejecucion de script_prueba.py
+        # Este paso es el que mostrará la tabla de datos en la consola
+        run: python script_prueba.py
