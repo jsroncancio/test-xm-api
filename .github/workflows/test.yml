@@ -1,0 +1,22 @@
+name: Test XM Connection
+
+on:
+  workflow_dispatch: # Solo ejecución manual para pruebas
+
+jobs:
+  test_job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install
+        run: pip install pandas pydataxm requests
+
+      - name: Run
+        run: python script_prueba.py
