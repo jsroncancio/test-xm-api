@@ -1,10 +1,12 @@
-name: Test XM Connection
+name: Monitor Diario Transicion
 
 on:
-  workflow_dispatch: # Solo ejecución manual para pruebas
+  schedule:
+    - cron: '0 15 * * *' # Se ejecuta a las 10:00 AM hora Colombia
+  workflow_dispatch:
 
 jobs:
-  test_job:
+  run_monitor:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,8 +18,9 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
+        # IMPORTANTE: Mantener estas versiones para que pydataxm funcione
         run: |
           pip install numpy==1.23.5 pandas==1.5.3 pydataxm requests
 
-      - name: Run
-        run: python script_prueba.py
+      - name: Execute Monitor
+        run: python monitor_brecha.py
