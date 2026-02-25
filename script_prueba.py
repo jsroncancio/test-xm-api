@@ -5,37 +5,42 @@ import datetime as dt
 def prueba_definitiva_gene():
     objetoAPI = nxm.ReadDB()
     
-    # Probamos con una fecha de hace 10 días para asegurar datos
-    fecha = (dt.datetime.now() - dt.timedelta(days=10)).date()
+    # Probamos con una fecha de hace 15 días para garantizar que el dato sea oficial
+    fecha = (dt.datetime.now() - dt.timedelta(days=15)).date()
     
     print(f"--- Usando códigos del Notebook para el {fecha} ---")
     
     try:
-        # 1. Probamos con 'Gene' y 'Recurso' (Tal cual está en tu celda 623)
-        print("\n🚀 Intentando: MetricId='Gene', Entity='Recurso'...")
+        # Según tu Notebook, el ID es 'Gene' y la entidad es 'Recurso'
+        print("\n🚀 Consultando MetricId='Gene', Entity='Recurso'...")
         df = objetoAPI.request_data("Gene", "Recurso", fecha, fecha)
         
         if df is not None and not df.empty:
-            print("✅ ¡EXITO TOTAL! Datos recibidos.")
-            print(f"Número de registros: {len(df)}")
-            print("\nPrimeras filas del reporte:")
-            # Mostramos las columnas para confirmar nombres
-            print(df[['Values_Code', '0', '1', '2']].head())
+            print("✅ ¡ÉXITO! Datos recibidos de XM.")
+            print(f"Registros encontrados: {len(df)}")
             
-            # Guardamos una pequeña muestra para que veas que sí hay datos
-            df.head(10).to_csv("muestra_datos_xm.csv")
-            print("\n💾 Se ha generado un archivo 'muestra_datos_xm.csv' con la prueba.")
+            # Mostramos las primeras columnas para ver los nombres de las plantas y horas
+            print("\nColumnas del reporte:")
+            print(df.columns.tolist())
+            
+            print("\nPrimeras filas (Muestra):")
+            # Mostramos la columna de identificación y las primeras 3 horas
+            cols_ver = ['Values_Code', '0', '1', '2']
+            print(df[cols_ver].head())
+            
         else:
-            print("⚠️ 'Gene' por 'Recurso' llegó vacío. Intentando por 'Sistema'...")
+            print("⚠️ El DataFrame llegó vacío. Intentando con Entidad='Sistema'...")
             df_sis = objetoAPI.request_data("Gene", "Sistema", fecha, fecha)
             if df_sis is not None and not df_sis.empty:
-                print("✅ ¡EXITO! 'Gene' por 'Sistema' funcionó.")
+                print("✅ ¡ÉXITO! Datos de Sistema recibidos.")
                 print(df_sis.head())
             else:
-                print("❌ No se encontraron datos con el ID 'Gene'.")
+                print("❌ No se obtuvieron datos con el ID 'Gene'.")
 
     except Exception as e:
-        print(f"❌ Error técnico: {e}")
+        print(f"❌ Error técnico durante la ejecución: {e}")
 
 if __name__ == "__main__":
-    prueba_definitiva_gene():
+    # Llamada correcta sin los dos puntos al final
+    prueba_definitiva_gene()
+    
