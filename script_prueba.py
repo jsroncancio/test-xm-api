@@ -1,37 +1,33 @@
 import pandas as pd
+import numpy as np
 from pydataxm import pydataxm as nxm
 import datetime as dt
 
-def prueba_final_con_parche():
-    # El parche: Si la librería intenta usar 'M', Pandas 1.5.3 lo aceptará
-    objetoAPI = nxm.ReadDB()
+def prueba_final_estabilizada():
+    print(f"--- Versiones: Pandas {pd.__version__} | Numpy {np.__version__} ---")
     
-    # Usamos una fecha segura (15 días atrás)
+    objetoAPI = nxm.ReadDB()
+    # 15 días atrás para asegurar datos oficiales
     fecha = (dt.datetime.now() - dt.timedelta(days=15)).date()
     
-    print(f"--- Ejecutando con Pandas {pd.__version__} para el {fecha} ---")
-    
     try:
-        # Consultamos usando los códigos de tu Notebook
+        print(f"🚀 Consultando 'Gene' por 'Recurso' para {fecha}...")
         df = objetoAPI.request_data("Gene", "Recurso", fecha, fecha)
         
         if df is not None and not df.empty:
             print("✅ ¡CONEXIÓN EXITOSA!")
-            print(f"Registros: {len(df)}")
-            
-            # Sumamos la generación total del día para probar que los datos son reales
-            # Las columnas de horas van de la '0' a la '23'
+            # Columnas de horas: de '0' a '23'
             columnas_horas = [str(i) for i in range(24)]
-            total_kwh = df[columnas_horas].sum().sum()
-            print(f"⚡ Generación total detectada: {round(total_kwh/1e6, 2)} GWh")
+            total_gwh = df[columnas_horas].apply(pd.to_numeric, errors='coerce').sum().sum() / 1e6
             
-            print("\nMuestra de plantas encontradas:")
+            print(f"⚡ Generación Total del día: {round(total_gwh, 2)} GWh")
+            print("\nMuestra de las primeras plantas:")
             print(df[['Values_Code', '0']].head())
         else:
             print("⚠️ El DataFrame llegó vacío.")
 
     except Exception as e:
-        print(f"❌ Error durante la ejecución: {e}")
+        print(f"❌ Error: {e}")
 
 if __name__ == "__main__":
-    prueba_final_con_parche()
+    prueba_final_estabilizada()
