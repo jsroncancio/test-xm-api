@@ -15,8 +15,9 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install
-        run: pip install pandas pydataxm requests
+      - name: Install dependencies
+        run: |
+          pip install pandas==1.5.3 pydataxm requests
 
       - name: Run
         run: python script_prueba.py
