@@ -17,7 +17,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install pandas==1.5.3 pydataxm requests
+          pip install numpy==1.23.5 pandas==1.5.3 pydataxm requests
 
       - name: Run
         run: python script_prueba.py
