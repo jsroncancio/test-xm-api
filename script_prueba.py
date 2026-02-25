@@ -2,37 +2,40 @@ import pandas as pd
 from pydataxm import pydataxm as nxm
 import datetime as dt
 
-def prueba_maestra():
+def prueba_definitiva_gene():
     objetoAPI = nxm.ReadDB()
-    # Usamos 10 días atrás para asegurar que la base de datos esté llena
+    
+    # Probamos con una fecha de hace 10 días para asegurar datos
     fecha = (dt.datetime.now() - dt.timedelta(days=10)).date()
     
-    print(f"--- Probando IDs técnicos para el {fecha} ---")
+    print(f"--- Usando códigos del Notebook para el {fecha} ---")
     
-    # Intento 1: Por Sistema (Resumen por tecnología)
-    print("\n1. Probando 'GeneSist' (Generación por Sistema)...")
     try:
-        df_sis = objetoAPI.request_data("GeneSist", "Sistema", fecha, fecha)
-        if df_sis is not None and not df_sis.empty:
-            print("✅ ¡LOGRADO! Datos de Sistema recibidos.")
-            print(df_sis[['Nombre', 'Value']].head())
+        # 1. Probamos con 'Gene' y 'Recurso' (Tal cual está en tu celda 623)
+        print("\n🚀 Intentando: MetricId='Gene', Entity='Recurso'...")
+        df = objetoAPI.request_data("Gene", "Recurso", fecha, fecha)
+        
+        if df is not None and not df.empty:
+            print("✅ ¡EXITO TOTAL! Datos recibidos.")
+            print(f"Número de registros: {len(df)}")
+            print("\nPrimeras filas del reporte:")
+            # Mostramos las columnas para confirmar nombres
+            print(df[['Values_Code', '0', '1', '2']].head())
+            
+            # Guardamos una pequeña muestra para que veas que sí hay datos
+            df.head(10).to_csv("muestra_datos_xm.csv")
+            print("\n💾 Se ha generado un archivo 'muestra_datos_xm.csv' con la prueba.")
         else:
-            print("❌ 'GeneSist' devolvió vacío.")
-    except Exception as e:
-        print(f"❌ Error con 'GeneSist': {e}")
+            print("⚠️ 'Gene' por 'Recurso' llegó vacío. Intentando por 'Sistema'...")
+            df_sis = objetoAPI.request_data("Gene", "Sistema", fecha, fecha)
+            if df_sis is not None and not df_sis.empty:
+                print("✅ ¡EXITO! 'Gene' por 'Sistema' funcionó.")
+                print(df_sis.head())
+            else:
+                print("❌ No se encontraron datos con el ID 'Gene'.")
 
-    # Intento 2: Por Recurso (Detalle por planta)
-    print("\n2. Probando 'GeneRecu' (Generación por Recurso)...")
-    try:
-        df_rec = objetoAPI.request_data("GeneRecu", "Recurso", fecha, fecha)
-        if df_rec is not None and not df_rec.empty:
-            print("✅ ¡LOGRADO! Datos de Recurso recibidos.")
-            # Mostramos las columnas para saber cómo clasificar
-            print("Columnas:", df_rec.columns.tolist())
-        else:
-            print("❌ 'GeneRecu' devolvió vacío.")
     except Exception as e:
-        print(f"❌ Error con 'GeneRecu': {e}")
+        print(f"❌ Error técnico: {e}")
 
 if __name__ == "__main__":
-    prueba_maestra()
+    prueba_definitiva_gene():
