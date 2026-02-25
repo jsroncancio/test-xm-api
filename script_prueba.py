@@ -3,47 +3,48 @@ import numpy as np
 from pydataxm import pydataxm as nxm
 import datetime as dt
 
-def test_visualizacion_datos():
-    # Inicializamos la API
+def validar_datos_en_run():
     objetoAPI = nxm.ReadDB()
     
-    # Usamos 15 días atrás para que los datos estén 100% validados por XM
+    # Usamos 15 días atrás para garantizar éxito en la consulta
     fecha = (dt.datetime.now() - dt.timedelta(days=15)).date()
     
-    print(f"--- INICIANDO CAPTURA DE DATOS PARA: {fecha} ---")
+    print(f"--- DIAGNÓSTICO DE CONSOLA PARA EL {fecha} ---")
     
     try:
-        # 1. Pedir Generación Real por Recurso (ID: Gene)
+        # 1. Extracción de datos
+        print("📥 Descargando generación (Gene)...")
         df_gen = objetoAPI.request_data("Gene", "Recurso", fecha, fecha)
         
-        # 2. Pedir Listado de Recursos para cruzar con la Fuente (Agua, Sol, etc.)
+        print("📥 Descargando metadatos (ListadoRecursos)...")
         df_meta = objetoAPI.request_data("ListadoRecursos", "Sistema", fecha, fecha)
 
         if df_gen is not None and not df_gen.empty:
-            # 3. Cruzar tablas usando 'Values_Code' (como en tu Notebook)
+            # 2. Cruce de información
             df = pd.merge(df_gen, df_meta[['Values_Code', 'Values_EnerSource']], on='Values_Code', how='left')
             
-            # 4. Sumar las 24 horas (columnas numéricas) para tener el total diario por planta
+            # 3. Suma horizontal de las 24 horas (Lógica exacta de tu Notebook)
             df['kWh_Dia'] = df.sum(axis=1, numeric_only=True)
             
-            # 5. Agrupar por Fuente de Energía y convertir a GWh
+            # 4. Agrupación por tipo de energía
             resumen = df.groupby('Values_EnerSource')['kWh_Dia'].sum().reset_index()
             resumen['GWh'] = resumen['kWh_Dia'] / 1_000_000
             resumen = resumen.sort_values(by='GWh', ascending=False)
 
-            # --- LO QUE VERÁS EN EL RUN ---
-            print("\n" + "="*45)
-            print(f"       TABLA DE GENERACIÓN REAL")
-            print("="*45)
-            print(resumen[['Values_EnerSource', 'GWh']].to_string(index=False))
-            print("="*45)
-            print(f"TOTAL DEL DÍA: {resumen['GWh'].sum():.2f} GWh\n")
+            # --- SALIDA VISUAL AL RUN ---
+            print("\n" + "="*50)
+            print(f"📊 RESULTADOS DE GENERACIÓN REAL EN COLOMBIA")
+            print("="*50)
+            print(resumen[['Values_EnerSource', 'GWh']].to_string(index=False, float_format="{:.2f}".format))
+            print("="*50)
+            print(f"TOTAL CALCULADO: {resumen['GWh'].sum():.2f} GWh")
+            print("="*50 + "\n")
             
         else:
-            print("⚠️ No se encontraron datos. Verifica la conexión con XM.")
+            print("⚠️ Error: El DataFrame de generación llegó vacío desde el servidor de XM.")
 
     except Exception as e:
-        print(f"❌ Error en el script: {e}")
+        print(f"❌ Error durante la ejecución del script: {e}")
 
 if __name__ == "__main__":
-    test_visualizacion_datos()
+    validar_datos_en_run()
