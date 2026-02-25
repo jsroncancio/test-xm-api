@@ -1,34 +1,28 @@
 import pandas as pd
 from pydataxm import pydataxm as nxm
-from datetime import datetime, timedelta
 
-def probar_conexion():
+def buscar_metricas():
     objetoAPI = nxm.ReadDB()
     
-    # Probamos con 10 días atrás para ir sobre seguro
-    fecha = (datetime.now() - timedelta(days=10)).date()
-    
-    print(f"--- Iniciando prueba para la fecha: {fecha} ---")
+    print("--- Buscando nombres oficiales de métricas en XM ---")
     
     try:
-        # Intentamos la métrica más básica: Generación por Sistema
-        df = objetoAPI.request_data("Generacion", "Sistema", fecha, fecha)
+        # Pedimos el inventario de métricas disponibles
+        df_metricas = objetoAPI.get_metrics()
         
-        if df is not None and not df.empty:
-            print("✅ ¡CONEXIÓN EXITOSA!")
-            print("\nPrimeras filas del reporte recibido:")
-            print(df.head())
-            
-            # Resumen de lo encontrado
-            resumen = df.groupby('Nombre')['Value'].sum() / 1e6
-            print("\nGeneración total por tecnología (GWh):")
-            print(resumen)
+        # Filtramos las que contengan la palabra 'Generacion'
+        filtro = df_metricas[df_metricas['MetricName'].str.contains('Generacion', case=False, na=False)]
+        
+        if not filtro.empty:
+            print("✅ Métricas encontradas con el nombre 'Generacion':")
+            # Mostramos el MetricId que es el que necesitamos para el código
+            print(filtro[['MetricName', 'Entity', 'MetricId']])
         else:
-            print("⚠️ El servidor respondió pero el DataFrame está vacío.")
-            print("Esto suele pasar si la métrica o la fecha no coinciden en la base de datos.")
+            print("❌ No se encontraron métricas con ese nombre. Aquí están las primeras 10 disponibles:")
+            print(df_metricas['MetricName'].head(10))
 
     except Exception as e:
-        print(f"❌ Error durante la ejecución: {e}")
+        print(f"❌ Error al consultar el inventario: {e}")
 
 if __name__ == "__main__":
-    probar_conexion()
+    buscar_metricas()
