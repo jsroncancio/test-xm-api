@@ -2,45 +2,36 @@ import pandas as pd
 from pydataxm import pydataxm as nxm
 import datetime as dt
 
-def prueba_definitiva_gene():
+def prueba_final_con_parche():
+    # El parche: Si la librería intenta usar 'M', Pandas 1.5.3 lo aceptará
     objetoAPI = nxm.ReadDB()
     
-    # Probamos con una fecha de hace 15 días para garantizar que el dato sea oficial
+    # Usamos una fecha segura (15 días atrás)
     fecha = (dt.datetime.now() - dt.timedelta(days=15)).date()
     
-    print(f"--- Usando códigos del Notebook para el {fecha} ---")
+    print(f"--- Ejecutando con Pandas {pd.__version__} para el {fecha} ---")
     
     try:
-        # Según tu Notebook, el ID es 'Gene' y la entidad es 'Recurso'
-        print("\n🚀 Consultando MetricId='Gene', Entity='Recurso'...")
+        # Consultamos usando los códigos de tu Notebook
         df = objetoAPI.request_data("Gene", "Recurso", fecha, fecha)
         
         if df is not None and not df.empty:
-            print("✅ ¡ÉXITO! Datos recibidos de XM.")
-            print(f"Registros encontrados: {len(df)}")
+            print("✅ ¡CONEXIÓN EXITOSA!")
+            print(f"Registros: {len(df)}")
             
-            # Mostramos las primeras columnas para ver los nombres de las plantas y horas
-            print("\nColumnas del reporte:")
-            print(df.columns.tolist())
+            # Sumamos la generación total del día para probar que los datos son reales
+            # Las columnas de horas van de la '0' a la '23'
+            columnas_horas = [str(i) for i in range(24)]
+            total_kwh = df[columnas_horas].sum().sum()
+            print(f"⚡ Generación total detectada: {round(total_kwh/1e6, 2)} GWh")
             
-            print("\nPrimeras filas (Muestra):")
-            # Mostramos la columna de identificación y las primeras 3 horas
-            cols_ver = ['Values_Code', '0', '1', '2']
-            print(df[cols_ver].head())
-            
+            print("\nMuestra de plantas encontradas:")
+            print(df[['Values_Code', '0']].head())
         else:
-            print("⚠️ El DataFrame llegó vacío. Intentando con Entidad='Sistema'...")
-            df_sis = objetoAPI.request_data("Gene", "Sistema", fecha, fecha)
-            if df_sis is not None and not df_sis.empty:
-                print("✅ ¡ÉXITO! Datos de Sistema recibidos.")
-                print(df_sis.head())
-            else:
-                print("❌ No se obtuvieron datos con el ID 'Gene'.")
+            print("⚠️ El DataFrame llegó vacío.")
 
     except Exception as e:
-        print(f"❌ Error técnico durante la ejecución: {e}")
+        print(f"❌ Error durante la ejecución: {e}")
 
 if __name__ == "__main__":
-    # Llamada correcta sin los dos puntos al final
-    prueba_definitiva_gene()
-    
+    prueba_final_con_parche()
