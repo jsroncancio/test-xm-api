@@ -186,7 +186,7 @@ def reporte_integral_v2():
         fig.text(
             0.01, 0.01,
             fuente,
-            ha="left",
+            ha="right",
             va="bottom",
             fontsize=9,
             alpha=0.85
@@ -205,7 +205,7 @@ def reporte_integral_v2():
             (0.98, 0.02),                 # posición (derecha, abajo)
             xycoords='figure fraction',
             frameon=False,
-            box_alignment=(1, 0)          # anclado abajo-derecha
+            box_alignment=(1, 1)          # anclado abajo-derecha
         )
         
         fig.add_artist(ab)
