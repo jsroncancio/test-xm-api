@@ -159,12 +159,21 @@ def reporte_integral_v2():
         
         def autopct_fmt(p):
             return f"{p:.1f}%" if p >= 3 else ""
+
+        color_map = {
+            "CARBON": "black",
+            "RAD SOLAR": "#FDB813",   # amarillo tipo solar
+            "GAS": "gray"
+        }
         
+        colors = [color_map.get(label, None) for label in labels]
+                
         ax1.pie(
             sizes,
             labels=None,
             autopct=autopct_fmt,
             startangle=90
+            colors=colors
         )
         
         ax1.set_title(f"Participación diaria por fuente (GWh) – {fecha_final}\nTotal: {total_dia:.2f} GWh")
