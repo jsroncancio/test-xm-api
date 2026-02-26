@@ -99,8 +99,9 @@ def reporte_integral_v2():
 
         # Cambios de Sofi*********************************************************
         
-        matplotlib.use("Agg")  # backend sin pantalla (clave en GitHub Actions)
-
+        # Backend sin pantalla (GitHub Actions)
+        matplotlib.use("Agg")
+        
         # Cargar Poppins
         font_path_regular = "Poppins-Regular.ttf"
         font_path_bold = "Poppins-Bold.ttf"
@@ -117,9 +118,8 @@ def reporte_integral_v2():
         res = resumen.copy()
         res["values_enersource"] = res["values_enersource"].fillna("SIN_CLASIFICAR")
         
-        # Para que la torta no quede ilegible con demasiadas porciones,
-        # agrupo las fuentes muy pequeñas en "OTROS" (ajusta el umbral si quieres).
-        umbral_pct = 1.0  # todo lo menor a 1% va a OTROS
+        # Agrupar fuentes muy pequeñas en "OTROS"
+        umbral_pct = 1.0
         res["pct"] = (res["gwh"] / total_dia * 100) if total_dia > 0 else 0.0
         
         res_grande = res[res["pct"] >= umbral_pct].copy()
@@ -145,32 +145,36 @@ def reporte_integral_v2():
         g_carbon = float(res.loc[res["values_enersource"] == "CARBON", "gwh"].sum())
         g_solar  = float(res.loc[res["values_enersource"] == "RAD SOLAR", "gwh"].sum())
         
-        # Figura con dos paneles (arriba torta, abajo barras)
+        # =====================
+        # Figura: torta + barras + footer (logo + fuente)
+        # =====================
         fig = plt.figure(figsize=(10, 10))
-        gs = fig.add_gridspec(2, 1, height_ratios=[3, 2])
+        gs = fig.add_gridspec(3, 1, height_ratios=[3, 2, 0.35])
         
-        # 1) Torta de participación por fuente
+        # 1) Torta
         ax1 = fig.add_subplot(gs[0, 0])
+        
         labels = res_plot["values_enersource"].astype(str).tolist()
         sizes = res_plot["gwh"].astype(float).tolist()
         
         def autopct_fmt(p):
-            return f"{p:.1f}%" if p >= 3 else ""  # solo etiqueta porcentajes >=3% para no saturar
+            return f"{p:.1f}%" if p >= 3 else ""
         
         ax1.pie(
             sizes,
-            labels=None,              # labels en leyenda para que sea más legible
+            labels=None,
             autopct=autopct_fmt,
             startangle=90
         )
+        
         ax1.set_title(f"Participación diaria por fuente (GWh) – {fecha_final}\nTotal: {total_dia:.2f} GWh")
         
-        # Leyenda a la derecha con GWh
         legend_txt = [f"{lab}: {val:.2f} GWh" for lab, val in zip(labels, sizes)]
         ax1.legend(legend_txt, loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)
         
-        # 2) Barra Carbón vs Solar
+        # 2) Barras
         ax2 = fig.add_subplot(gs[1, 0])
+        
         bars = ax2.bar(["CARBÓN", "SOLAR"], [g_carbon, g_solar])
         ax2.set_title("Comparación diaria: Carbón vs Solar")
         ax2.set_ylabel("GWh")
@@ -179,31 +183,27 @@ def reporte_integral_v2():
         for b in bars:
             h = b.get_height()
             ax2.text(b.get_x() + b.get_width()/2, h, f"{h:.2f}", ha="center", va="bottom", fontsize=10)
-        fuente = ("Fuente: XM (datos de generación del SIN). Elaboración propia.")
         
+        # 3) Footer (logo + fuente)
+        ax_footer = fig.add_subplot(gs[2, 0])
+        ax_footer.axis("off")
         
-        fig.text(
-            0.99, 0.03,   # derecha-abajo
+        logo = mpimg.imread("Logo-PNG.png")
+        ax_footer.imshow(logo)
+        ax_footer.set_aspect("auto")
+        
+        fuente = "Fuente: XM (datos de generación del SIN). Elaboración propia."
+        ax_footer.text(
+            0.99, 0.05,
             fuente,
             ha="right",
             va="bottom",
             fontsize=9,
-            alpha=0.85)
+            transform=ax_footer.transAxes
+        )
         
-        # Deja margen abajo para el pie de página
-        fig.tight_layout(rect=[0, 0.04, 1, 1])
-
-        # Insertar logo en esquina inferior derecha
-        logo = mpimg.imread("Logo-PNG.png")
-        
-        ax_logo = fig.add_axes([0.84, 0.88, 0.14, 0.10])  # [x, y, w, h] en fracción de figura
-        ax_logo.imshow(logo)
-        ax_logo.axis("off")
-
-        # Ajuste manual 
-        fig.subplots_adjust(left=0.06, right=0.80, top=0.92, bottom=0.08, hspace=0.35)
-        
-        # Guardar 
+        # Guardar
+        fig.tight_layout()
         fig.savefig("dashboard_generacion.png", dpi=200, facecolor="white")
         plt.close(fig)
         
