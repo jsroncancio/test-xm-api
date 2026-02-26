@@ -90,10 +90,68 @@ def reporte_integral_v2():
         print(f"   {comparativa(g_sol_viento, g_termica, 'Sol+Viento', 'Térmica')}")
         indice_sv = (g_sol_viento / g_termica * 100) if g_termica > 0 else 100
         print(f"   Cobertura: {indice_sv:.2f}%")
+
+        import os
+        import matplotlib.pyplot as plt
+        
+        outdir = "outputs"
+        os.makedirs(outdir, exist_ok=True)
+        
+        # A) KPIs explícitos: CARBÓN vs SOLAR (para que la comparación sea exacta)
+        g_carbon = float(resumen.loc[resumen["values_enersource"] == "CARBON", "gwh"].sum())
+        g_solar  = float(resumen.loc[resumen["values_enersource"] == "RAD SOLAR", "gwh"].sum())
+        
+        # 1) Barra: CARBÓN vs SOLAR (GWh)
+        plt.figure(figsize=(7, 4))
+        labels = ["CARBÓN", "SOLAR"]
+        vals = [g_carbon, g_solar]
+        bars = plt.bar(labels, vals)
+        plt.title(f"Generación diaria: Carbón vs Solar ({fecha_final})")
+        plt.ylabel("GWh")
+        plt.grid(axis="y", alpha=0.3)
+        
+        # etiquetas arriba de cada barra
+        for b in bars:
+            h = b.get_height()
+            plt.text(b.get_x() + b.get_width()/2, h, f"{h:.2f}", ha="center", va="bottom", fontsize=10)
+        
+        plt.tight_layout()
+        plt.savefig(os.path.join(outdir, "carbon_vs_solar_gwh.png"), dpi=200)
+        plt.close()
+        
+        # 2) Barra apilada: participación por bloques (contexto del mix)
+        # Nota: aquí uso los bloques que ya calculaste (sol+viento, fncer, hidro, térmica)
+        plt.figure(figsize=(9, 2.8))
+        componentes = [
+            ("SOL+VIENTO", g_sol_viento),
+            ("FNCER TOTAL", g_fncer),
+            ("HIDRO", g_hidro),
+            ("TÉRMICA FÓSIL", g_termica),
+        ]
+        total = total_dia if total_dia > 0 else 1.0
+        
+        left = 0.0
+        for nombre, valor in componentes:
+            ancho = valor / total
+            plt.barh(["Mix diario"], [ancho], left=left, label=f"{nombre} ({valor:.1f} GWh, {ancho*100:.1f}%)")
+            left += ancho
+        
+        plt.title(f"Mix diario por bloques ({fecha_final})")
+        plt.xlim(0, 1)
+        plt.xlabel("Participación del total")
+        plt.grid(axis="x", alpha=0.3)
+        plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.25), ncol=2, frameon=False)
+        plt.tight_layout()
+        plt.savefig(os.path.join(outdir, "mix_bloques_participacion.png"), dpi=200)
+        plt.close()
+        
+        print(f"🖼️ Gráficas guardadas en: {outdir}/carbon_vs_solar_gwh.png y {outdir}/mix_bloques_participacion.png")
         
         print(f"\n{sep}")
         print(f" GENERACIÓN TOTAL: {total_dia:.2f} GWh")
         print(f"{sep}\n")
+
+        
 
     except Exception as e:
         print(f"❌ Error: {e}")
