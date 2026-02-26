@@ -20,7 +20,9 @@ def reporte_maestro_final():
                 break
         except: continue
 
-    if df_gen is None: return
+    if df_gen is None: 
+        print("❌ No se encontraron datos.")
+        return
 
     try:
         # 1. Normalización y Cruce
@@ -53,6 +55,32 @@ def reporte_maestro_final():
                 return f"⚖️ Empate exacto entre {nom_a} y {nom_b}"
 
         # --- SALIDA FINAL INTEGRADA AL RUN ---
-        print("\n" + "█"*65)
+        separador = "█" * 65
+        print(f"\n{separador}")
         print(f" 🏆 MONITOR INTEGRAL DE TRANSICIÓN ENERGÉTICA - {fecha_final}")
-        print("█" *
+        print(separador)
+        
+        print("\n🔹 1. DESGLOSE DETALLADO POR FUENTE (EUREKA):")
+        print("-" * 65)
+        print(resumen[['values_enersource', 'gwh', 'porcentaje']].to_string(index=False, float_format="{:.2f}".format))
+        
+        print("\n🔹 2. BALANCE POR BLOQUES ESTRATÉGICOS:")
+        print("-" * 65)
+        print(f"☀️💨 SOL+VIENTO: {g_sv:8.2f} GWh | {(g_sv/total_dia*100):.2f}%")
+        print(f"🌱 FNCER TOTAL:  {g_fncer:8.2f} GWh | {(g_fncer/total_dia*100):.2f}%")
+        print(f"🔥 TÉRMICA:      {g_termica:8.2f} GWh | {(g_termica/total_dia*100):.2f}%")
+        print(f"💧 HIDRO:        {g_hidro:8.2f} GWh | {(g_hidro/total_dia*100):.2f}%")
+
+        print("\n🔹 3. ANÁLISIS DINÁMICO DE LA TRANSICIÓN:")
+        print("-" * 65)
+        print(f"🚀 FNCER vs TÉRMICA:")
+        print(f"   {comparativa(g_fncer, g_termica, 'FNCER', 'Térmica')}")
+        print(f"   Cobertura: {(g_fncer/g_termica*100):.2f}%")
+        
+        print(f"\n⚡ SOL+VIENTO vs TÉRMICA:")
+        print(f"   {comparativa(g_sv, g_termica, 'Sol+Viento', 'Térmica')}")
+        print(f"   Cobertura: {(g_sv/g_termica*100):.2f}%")
+        
+        print(f"\n{separador}")
+        print(f" GENERACIÓN TOTAL DEL DÍA: {total_dia:.2f} GWh")
+        print(f"{separador}\n")
