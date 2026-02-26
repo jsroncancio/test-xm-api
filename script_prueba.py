@@ -3,6 +3,7 @@ import numpy as np
 from pydataxm import pydataxm as nxm
 import datetime as dt
 import os
+import matplotlib
 import matplotlib.pyplot as plt
 
 def reporte_integral_v2():
