@@ -19,7 +19,7 @@ jobs:
         # Forzamos estas versiones para evitar el error de 'M' en Pandas 
         # y la incompatibilidad binaria con Numpy.
         run: |
-          pip install numpy==1.23.5 pandas==1.5.3 pydataxm
+          pip install numpy==1.23.5 pandas==1.5.3 matplotlib==3.7.5 pydataxm
 
       - name: Ejecucion de script_prueba.py
         # Este paso es el que mostrará la tabla de datos en la consola
