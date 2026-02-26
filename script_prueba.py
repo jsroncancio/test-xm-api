@@ -188,19 +188,30 @@ def reporte_integral_v2():
         ax_footer = fig.add_subplot(gs[2, 0])
         ax_footer.axis("off")
         
-        logo = mpimg.imread("Logo-PNG.png")
-        ax_footer.imshow(logo)
-        ax_footer.set_aspect("auto")
-        
-        fuente = "Fuente: XM (datos de generación del SIN). Elaboración propia."
+        # Fuente alineada a la derecha
         ax_footer.text(
-            0.99, 0.05,
-            fuente,
+            0.98, 0.15,
+            "Fuente: XM (datos de generación del SIN). Elaboración propia.",
             ha="right",
             va="bottom",
             fontsize=9,
             transform=ax_footer.transAxes
         )
+        
+        # Logo pequeño a la izquierda
+
+        
+        logo = mpimg.imread("Logo-PNG.png")
+        imagebox = OffsetImage(logo, zoom=0.16)  # ajusta tamaño si quieres más pequeño
+        
+        ab = AnnotationBbox(
+            imagebox,
+            (0.08, 0.55),              # izquierda dentro del footer
+            xycoords=ax_footer.transAxes,
+            frameon=False
+        )
+        
+        ax_footer.add_artist(ab)
         
         # Guardar
         fig.tight_layout()
