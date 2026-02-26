@@ -196,7 +196,7 @@ def reporte_integral_v2():
         # Insertar logo en esquina inferior derecha
         logo = mpimg.imread("Logo-PNG.png")
         
-       ax_logo = fig.add_axes([0.84, 0.88, 0.14, 0.10])  # [x, y, w, h] en fracción de figura
+        ax_logo = fig.add_axes([0.84, 0.88, 0.14, 0.10])  # [x, y, w, h] en fracción de figura
         ax_logo.imshow(logo)
         ax_logo.axis("off")
 
