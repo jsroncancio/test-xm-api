@@ -99,9 +99,9 @@ def reporte_integral_v2():
         
         matplotlib.use("Agg")  # backend sin pantalla (clave en GitHub Actions)
 
-        # Cargar Poppins desde el repo
-        font_path_regular = "assets/fonts/Poppins-Regular.ttf"
-        font_path_bold = "assets/fonts/Poppins-Bold.ttf"
+        # Cargar Poppins
+        font_path_regular = "Poppins-Regular.ttf"
+        font_path_bold = "Poppins-Bold.ttf"
         
         fm.fontManager.addfont(font_path_regular)
         fm.fontManager.addfont(font_path_bold)
