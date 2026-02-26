@@ -24,3 +24,9 @@ jobs:
       - name: Ejecucion de script_prueba.py
         # Este paso es el que mostrará la tabla de datos en la consola
         run: python script_prueba.py
+
+      - name: Subir grafica como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: grafica_generacion
+          path: carbon_vs_solar.png
