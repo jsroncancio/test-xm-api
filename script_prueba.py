@@ -177,6 +177,23 @@ def reporte_integral_v2():
         for b in bars:
             h = b.get_height()
             ax2.text(b.get_x() + b.get_width()/2, h, f"{h:.2f}", ha="center", va="bottom", fontsize=10)
+        fuente = (
+            "Fuente: XM"
+            "Elaboración propia."
+        )
+        
+        fig.text(
+            0.01, 0.01,
+            fuente,
+            ha="left",
+            va="bottom",
+            fontsize=9,
+            alpha=0.85
+        )
+        
+        plt.tight_layout(rect=[0, 0.03, 1, 1])
+        plt.savefig("dashboard_generacion.png", dpi=200, bbox_inches="tight")
+        plt.close()
         
         # Guardar dashboard
         plt.tight_layout()
