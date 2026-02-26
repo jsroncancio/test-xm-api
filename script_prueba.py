@@ -191,16 +191,15 @@ def reporte_integral_v2():
             alpha=0.85
         )
         
-        plt.tight_layout(rect=[0, 0.03, 1, 1])
-        plt.savefig("dashboard_generacion.png", dpi=200, bbox_inches="tight")
-        plt.close()
+        # Deja margen abajo para el pie de página
+        fig.tight_layout(rect=[0, 0.04, 1, 1])
         
-        # Guardar dashboard
-        plt.tight_layout()
-        plt.savefig("dashboard_generacion.png", dpi=200, bbox_inches="tight")
-        plt.close()
+        # Guarda la figura correcta (no la figura activa de pyplot)
+        fig.savefig("dashboard_generacion.png", dpi=200, bbox_inches="tight", facecolor="white")
         
-        print("🖼️ Dashboard generado: dashboard_generacion.png")
+        plt.close(fig)
+        
+        print("Dashboard generado: dashboard_generacion.png")
 
         # Cambios de Sofi*********************************************************
 
