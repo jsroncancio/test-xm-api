@@ -183,8 +183,8 @@ def reporte_integral_v2():
             "Fuente: XM (datos de generación del SIN). Elaboración propia."
         )
         
-        fig.text(
-            0.01, 0.01,
+       fig.text(
+            0.99, 0.03,   # derecha-abajo
             fuente,
             ha="right",
             va="bottom",
@@ -198,21 +198,15 @@ def reporte_integral_v2():
         # Insertar logo en esquina inferior derecha
         logo = mpimg.imread("Logo-PNG.png")
         
-        imagebox = OffsetImage(logo, zoom=0.12)  # ajusta zoom si queda muy grande/pequeño
+       ax_logo = fig.add_axes([0.84, 0.88, 0.14, 0.10])  # [x, y, w, h] en fracción de figura
+        ax_logo.imshow(logo)
+        ax_logo.axis("off")
+
+        # Ajuste manual 
+        fig.subplots_adjust(left=0.06, right=0.80, top=0.92, bottom=0.08, hspace=0.35)
         
-        ab = AnnotationBbox(
-            imagebox,
-            (0.98, 0.02),                 # posición (derecha, abajo)
-            xycoords='figure fraction',
-            frameon=False,
-            box_alignment=(1, 1)          # anclado abajo-derecha
-        )
-        
-        fig.add_artist(ab)
-        
-        # Guarda la figura correcta (no la figura activa de pyplot)
-        fig.savefig("dashboard_generacion.png", dpi=200, bbox_inches="tight", facecolor="white")
-        
+        # Guardar 
+        fig.savefig("dashboard_generacion.png", dpi=200, facecolor="white")
         plt.close(fig)
         
         print("Dashboard generado: dashboard_generacion.png")
