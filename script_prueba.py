@@ -185,11 +185,14 @@ def reporte_integral_v2():
         
         # 2) Barras
         ax2 = fig.add_subplot(gs[1, 0])
+        pos = ax2.get_position()
+        ax2.set_position([0.20, pos.y0, 0.60, pos.height])
         
         bars = ax2.bar(
             ["CARBÓN", "SOLAR"],
             [g_carbon, g_solar],
-            color=["black", "#FFC107"]
+            color=["black", "#FFC107"],
+            width=0.4   
         )
         ax2.set_title("Comparación diaria: Carbón vs Solar")
         ax2.set_ylabel("GWh")
