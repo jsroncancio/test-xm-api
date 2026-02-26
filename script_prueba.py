@@ -98,24 +98,79 @@ def reporte_integral_v2():
         
         matplotlib.use("Agg")  # backend sin pantalla (clave en GitHub Actions)
        
-        g_carbon = float(resumen.loc[resumen["values_enersource"] == "CARBON", "gwh"].sum())
-        g_solar  = float(resumen.loc[resumen["values_enersource"] == "RAD SOLAR", "gwh"].sum())
+        # Datos base
+        res = resumen.copy()
+        res["values_enersource"] = res["values_enersource"].fillna("SIN_CLASIFICAR")
         
-        plt.figure(figsize=(7, 4))
-        bars = plt.bar(["CARBÓN", "SOLAR"], [g_carbon, g_solar])
-        plt.title(f"Carbón vs Solar - {fecha_final}")
-        plt.ylabel("GWh")
-        plt.grid(axis="y", alpha=0.3)
+        # Para que la torta no quede ilegible con demasiadas porciones,
+        # agrupo las fuentes muy pequeñas en "OTROS" (ajusta el umbral si quieres).
+        umbral_pct = 1.0  # todo lo menor a 1% va a OTROS
+        res["pct"] = (res["gwh"] / total_dia * 100) if total_dia > 0 else 0.0
+        
+        res_grande = res[res["pct"] >= umbral_pct].copy()
+        res_peq = res[res["pct"] < umbral_pct].copy()
+        
+        if not res_peq.empty:
+            otros_gwh = float(res_peq["gwh"].sum())
+            otros_pct = float(res_peq["pct"].sum())
+            fila_otros = pd.DataFrame([{
+                "values_enersource": "OTROS",
+                "kwh_dia": np.nan,
+                "gwh": otros_gwh,
+                "%": np.nan,
+                "pct": otros_pct
+            }])
+            res_plot = pd.concat([res_grande, fila_otros], ignore_index=True)
+        else:
+            res_plot = res_grande
+        
+        res_plot = res_plot.sort_values("gwh", ascending=False)
+        
+        # Carbón vs Solar
+        g_carbon = float(res.loc[res["values_enersource"] == "CARBON", "gwh"].sum())
+        g_solar  = float(res.loc[res["values_enersource"] == "RAD SOLAR", "gwh"].sum())
+        
+        # Figura con dos paneles (arriba torta, abajo barras)
+        fig = plt.figure(figsize=(10, 10))
+        gs = fig.add_gridspec(2, 1, height_ratios=[3, 2])
+        
+        # 1) Torta de participación por fuente
+        ax1 = fig.add_subplot(gs[0, 0])
+        labels = res_plot["values_enersource"].astype(str).tolist()
+        sizes = res_plot["gwh"].astype(float).tolist()
+        
+        def autopct_fmt(p):
+            return f"{p:.1f}%" if p >= 3 else ""  # solo etiqueta porcentajes >=3% para no saturar
+        
+        ax1.pie(
+            sizes,
+            labels=None,              # labels en leyenda para que sea más legible
+            autopct=autopct_fmt,
+            startangle=90
+        )
+        ax1.set_title(f"Participación diaria por fuente (GWh) – {fecha_final}\nTotal: {total_dia:.2f} GWh")
+        
+        # Leyenda a la derecha con GWh
+        legend_txt = [f"{lab}: {val:.2f} GWh" for lab, val in zip(labels, sizes)]
+        ax1.legend(legend_txt, loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)
+        
+        # 2) Barra Carbón vs Solar
+        ax2 = fig.add_subplot(gs[1, 0])
+        bars = ax2.bar(["CARBÓN", "SOLAR"], [g_carbon, g_solar])
+        ax2.set_title("Comparación diaria: Carbón vs Solar")
+        ax2.set_ylabel("GWh")
+        ax2.grid(axis="y", alpha=0.3)
         
         for b in bars:
             h = b.get_height()
-            plt.text(b.get_x() + b.get_width()/2, h, f"{h:.2f}", ha="center", va="bottom", fontsize=10)
+            ax2.text(b.get_x() + b.get_width()/2, h, f"{h:.2f}", ha="center", va="bottom", fontsize=10)
         
+        # Guardar dashboard
         plt.tight_layout()
-        plt.savefig("carbon_vs_solar.png", dpi=200)
+        plt.savefig("dashboard_generacion.png", dpi=200, bbox_inches="tight")
         plt.close()
         
-        print("🖼️ Gráfica lista: carbon_vs_solar.png")
+        print("🖼️ Dashboard generado: dashboard_generacion.png")
 
         # Cambios de Sofi*********************************************************
 
