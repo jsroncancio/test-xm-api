@@ -172,7 +172,7 @@ def reporte_integral_v2():
             sizes,
             labels=None,
             autopct=autopct_fmt,
-            startangle=90
+            startangle=90,
             colors=colors
         )
         
