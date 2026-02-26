@@ -3,7 +3,7 @@ import numpy as np
 from pydataxm import pydataxm as nxm
 import datetime as dt
 
-def reporte_maestro_transicion():
+def reporte_maestro_final():
     objetoAPI = nxm.ReadDB()
     hoy = dt.datetime.now().date()
     df_gen, df_meta, fecha_final = None, None, None
@@ -45,4 +45,14 @@ def reporte_maestro_transicion():
         def comparativa(val_a, val_b, nom_a, nom_b):
             dif = val_a - val_b
             pct = (abs(dif) / val_b * 100) if val_b > 0 else 0
-            if dif >
+            if dif > 0:
+                return f"✅ {nom_a} superó a {nom_b} por {dif:.2f} GWh (+{pct:.2f}%)"
+            elif dif < 0:
+                return f"⚠️ {nom_b} superó a {nom_a} por {abs(dif):.2f} GWh (+{pct:.2f}%)"
+            else:
+                return f"⚖️ Empate exacto entre {nom_a} y {nom_b}"
+
+        # --- SALIDA FINAL INTEGRADA AL RUN ---
+        print("\n" + "█"*65)
+        print(f" 🏆 MONITOR INTEGRAL DE TRANSICIÓN ENERGÉTICA - {fecha_final}")
+        print("█" *
