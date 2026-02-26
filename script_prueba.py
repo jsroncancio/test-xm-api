@@ -6,6 +6,8 @@ import os
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
+import matplotlib.image as mpimg
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
 def reporte_integral_v2():
     objetoAPI = nxm.ReadDB()
