@@ -179,18 +179,16 @@ def reporte_integral_v2():
         for b in bars:
             h = b.get_height()
             ax2.text(b.get_x() + b.get_width()/2, h, f"{h:.2f}", ha="center", va="bottom", fontsize=10)
-        fuente = (
-            "Fuente: XM (datos de generación del SIN). Elaboración propia."
-        )
+        fuente = ("Fuente: XM (datos de generación del SIN). Elaboración propia.")
         
-       fig.text(
+        
+        fig.text(
             0.99, 0.03,   # derecha-abajo
             fuente,
             ha="right",
             va="bottom",
             fontsize=9,
-            alpha=0.85
-        )
+            alpha=0.85)
         
         # Deja margen abajo para el pie de página
         fig.tight_layout(rect=[0, 0.04, 1, 1])
