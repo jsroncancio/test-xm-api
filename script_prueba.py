@@ -5,6 +5,7 @@ import datetime as dt
 import os
 import matplotlib
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 
 def reporte_integral_v2():
     objetoAPI = nxm.ReadDB()
@@ -97,7 +98,19 @@ def reporte_integral_v2():
         # Cambios de Sofi*********************************************************
         
         matplotlib.use("Agg")  # backend sin pantalla (clave en GitHub Actions)
-       
+
+        # Cargar Poppins desde el repo
+        font_path_regular = "assets/fonts/Poppins-Regular.ttf"
+        font_path_bold = "assets/fonts/Poppins-Bold.ttf"
+        
+        fm.fontManager.addfont(font_path_regular)
+        fm.fontManager.addfont(font_path_bold)
+        
+        prop_regular = fm.FontProperties(fname=font_path_regular)
+        prop_bold = fm.FontProperties(fname=font_path_bold)
+        
+        plt.rcParams["font.family"] = prop_regular.get_name()
+        
         # Datos base
         res = resumen.copy()
         res["values_enersource"] = res["values_enersource"].fillna("SIN_CLASIFICAR")
