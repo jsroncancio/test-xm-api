@@ -93,36 +93,31 @@ def reporte_integral_v2():
         indice_sv = (g_sol_viento / g_termica * 100) if g_termica > 0 else 100
         print(f"   Cobertura: {indice_sv:.2f}%")
 
+        # Cambios de Sofi*********************************************************
+        
+        matplotlib.use("Agg")  # backend sin pantalla (clave en GitHub Actions)
+       
+        g_carbon = float(resumen.loc[resumen["values_enersource"] == "CARBON", "gwh"].sum())
+        g_solar  = float(resumen.loc[resumen["values_enersource"] == "RAD SOLAR", "gwh"].sum())
+        
+        plt.figure(figsize=(7, 4))
+        bars = plt.bar(["CARBÓN", "SOLAR"], [g_carbon, g_solar])
+        plt.title(f"Carbón vs Solar - {fecha_final}")
+        plt.ylabel("GWh")
+        plt.grid(axis="y", alpha=0.3)
+        
+        for b in bars:
+            h = b.get_height()
+            plt.text(b.get_x() + b.get_width()/2, h, f"{h:.2f}", ha="center", va="bottom", fontsize=10)
+        
+        plt.tight_layout()
+        plt.savefig("carbon_vs_solar.png", dpi=200)
+        plt.close()
+        
+        print("🖼️ Gráfica lista: carbon_vs_solar.png")
 
-        
-        # --- BLOQUE VISUAL EN LOG: CARBÓN VS SOLAR ---
-        g_carbon = float(resumen[resumen['values_enersource'] == 'CARBON']['gwh'].sum())
-        g_solar  = float(resumen[resumen['values_enersource'] == 'RAD SOLAR']['gwh'].sum())
-        
-        print("\n" + "█"*60)
-        print(" 📊 VISUAL COMPARATIVO CARBÓN vs SOLAR")
-        print("█"*60)
-        
-        # comparación textual clara
-        if g_carbon > g_solar:
-            print(f"🔥 CARBÓN domina por {g_carbon - g_solar:.2f} GWh")
-        elif g_solar > g_carbon:
-            print(f"☀️ SOLAR domina por {g_solar - g_carbon:.2f} GWh")
-        else:
-            print("⚖️ Empate exacto")
-        
-        print(f"CARBÓN: {g_carbon:.2f} GWh")
-        print(f"SOLAR : {g_solar:.2f} GWh")
-        
-        # mini barra visual proporcional
-        max_val = max(g_carbon, g_solar, 1e-9)
-        def barra(v):
-            return "█" * int((v / max_val) * 40)
-        
-        print("\nRepresentación visual:")
-        print(f"CARBÓN |{barra(g_carbon)}")
-        print(f"SOLAR  |{barra(g_solar)}")
-        print("█"*60)
+        # Cambios de Sofi*********************************************************
+
         
         print(f"\n{sep}")
         print(f" GENERACIÓN TOTAL: {total_dia:.2f} GWh")
