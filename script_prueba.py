@@ -178,8 +178,7 @@ def reporte_integral_v2():
             h = b.get_height()
             ax2.text(b.get_x() + b.get_width()/2, h, f"{h:.2f}", ha="center", va="bottom", fontsize=10)
         fuente = (
-            "Fuente: XM"
-            "Elaboración propia."
+            "Fuente: XM (datos de generación del SIN). Elaboración propia."
         )
         
         fig.text(
@@ -193,6 +192,21 @@ def reporte_integral_v2():
         
         # Deja margen abajo para el pie de página
         fig.tight_layout(rect=[0, 0.04, 1, 1])
+
+        # Insertar logo en esquina inferior derecha
+        logo = mpimg.imread("Logo-PNG.png")
+        
+        imagebox = OffsetImage(logo, zoom=0.12)  # ajusta zoom si queda muy grande/pequeño
+        
+        ab = AnnotationBbox(
+            imagebox,
+            (0.98, 0.02),                 # posición (derecha, abajo)
+            xycoords='figure fraction',
+            frameon=False,
+            box_alignment=(1, 0)          # anclado abajo-derecha
+        )
+        
+        fig.add_artist(ab)
         
         # Guarda la figura correcta (no la figura activa de pyplot)
         fig.savefig("dashboard_generacion.png", dpi=200, bbox_inches="tight", facecolor="white")
