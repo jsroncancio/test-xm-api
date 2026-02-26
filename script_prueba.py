@@ -163,10 +163,12 @@ def reporte_integral_v2():
         color_map = {
             "CARBON": "black",
             "RAD SOLAR": "#FDB813",   # amarillo tipo solar
-            "GAS": "gray"
+            "GAS": "gray",
+            "BAGAZO": "#2E7D32",      # verde
+            "OTROS": "#F57C00"
         }
         
-        colors = [color_map.get(label, None) for label in labels]
+        colors = [color_map.get(label, "#1f77b4") for label in labels]
                 
         ax1.pie(
             sizes,
@@ -184,7 +186,11 @@ def reporte_integral_v2():
         # 2) Barras
         ax2 = fig.add_subplot(gs[1, 0])
         
-        bars = ax2.bar(["CARBÓN", "SOLAR"], [g_carbon, g_solar])
+        bars = ax2.bar(
+            ["CARBÓN", "SOLAR"],
+            [g_carbon, g_solar],
+            color=["black", "#FFC107"]
+        )
         ax2.set_title("Comparación diaria: Carbón vs Solar")
         ax2.set_ylabel("GWh")
         ax2.grid(axis="y", alpha=0.3)
