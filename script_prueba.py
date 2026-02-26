@@ -3,10 +3,12 @@ import numpy as np
 from pydataxm import pydataxm as nxm
 import datetime as dt
 
-def reporte_refinado_transicion():
+def reporte_maestro_transicion():
     objetoAPI = nxm.ReadDB()
     hoy = dt.datetime.now().date()
     df_gen, df_meta, fecha_final = None, None, None
+
+    print(f"🔍 Buscando el reporte más reciente disponible...")
 
     for i in range(2, 16):
         fecha_test = hoy - dt.timedelta(days=i)
@@ -21,57 +23,26 @@ def reporte_refinado_transicion():
     if df_gen is None: return
 
     try:
+        # 1. Normalización y Cruce
         df_gen.columns = [c.lower() for c in df_gen.columns]
         df_meta.columns = [c.lower() for c in df_meta.columns]
         df = pd.merge(df_gen, df_meta[['values_code', 'values_enersource']], on='values_code', how='left')
         df['kwh_dia'] = df.sum(axis=1, numeric_only=True)
         
+        # 2. Resumen por Fuente (EUREKA)
         resumen = df.groupby('values_enersource')['kwh_dia'].sum().reset_index()
         resumen['gwh'] = resumen['kwh_dia'] / 1_000_000
         total_dia = resumen['gwh'].sum()
+        resumen['porcentaje'] = (resumen['gwh'] / total_dia) * 100
+        resumen = resumen.sort_values(by='gwh', ascending=False)
 
-        # BLOQUES DE ANÁLISIS
-        g_sol_viento = resumen[resumen['values_enersource'].isin(['RAD SOLAR', 'VIENTO'])]['gwh'].sum()
+        # 3. Bloques Estratégicos
+        g_sv = resumen[resumen['values_enersource'].isin(['RAD SOLAR', 'VIENTO'])]['gwh'].sum()
         g_fncer = resumen[resumen['values_enersource'].isin(['RAD SOLAR', 'VIENTO', 'BAGAZO', 'BIOMASA', 'BIOGAS'])]['gwh'].sum()
         g_termica = resumen[resumen['values_enersource'].isin(['GAS', 'CARBON', 'COMBUSTOLEO', 'ACPM', 'FUELOIL'])]['gwh'].sum()
         g_hidro = resumen[resumen['values_enersource'] == 'AGUA']['gwh'].sum()
 
-        def calcular_comparativa(valor_a, valor_b, nombre_a, nombre_b):
-            diferencia = valor_a - valor_b
-            porcentaje = (abs(diferencia) / valor_b * 100) if valor_b > 0 else 0
-            if diferencia > 0:
-                return f"✅ {nombre_a} generó {diferencia:.2f} GWh más que {nombre_b} (+{porcentaje:.2f}%)"
-            elif diferencia < 0:
-                return f"⚠️ {nombre_b} generó {abs(diferencia):.2f} GWh más que {nombre_a} (+{porcentaje:.2f}%)"
-            else:
-                return f"⚖️ Empate exacto entre {nombre_a} y {nombre_b}"
-
-        print("\n" + "█"*65)
-        print(f" 🏆 MONITOR DE TRANSICIÓN ENERGÉTICA - {fecha_final}")
-        print("█" * 65)
-        
-        print(f"\n⚡ GENERACIÓN TOTAL: {total_dia:.2f} GWh")
-        print("-" * 65)
-        print(f"☀️💨 SOL+VIENTO: {g_sol_viento:8.2f} GWh | 🌱 FNCER: {g_fncer:8.2f} GWh")
-        print(f"🔥 TÉRMICA:     {g_termica:8.2f} GWh | 💧 HIDRO: {g_hidro:8.2f} GWh")
-
-        print("\n📈 ANÁLISIS DE BRECHAS Y COBERTURA:")
-        print("-" * 65)
-        
-        # Comparativa 1: FNCER vs TÉRMICA
-        print(f"🚀 FNCER vs TÉRMICA:")
-        print(f"   {calcular_comparativa(g_fncer, g_termica, 'FNCER', 'Térmica')}")
-        print(f"   Cobertura: {(g_fncer/g_termica*100):.2f}%")
-        
-        # Comparativa 2: SOL+VIENTO vs TÉRMICA
-        print(f"\n⚡ SOL+VIENTO vs TÉRMICA:")
-        print(f"   {calcular_comparativa(g_sol_viento, g_termica, 'Sol+Viento', 'Térmica')}")
-        print(f"   Cobertura: {(g_sol_viento/g_termica*100):.2f}%")
-        
-        print("\n" + "█" * 65 + "\n")
-
-    except Exception as e:
-        print(f"❌ Error: {e}")
-
-if __name__ == "__main__":
-    reporte_refinado_transicion()
+        def comparativa(val_a, val_b, nom_a, nom_b):
+            dif = val_a - val_b
+            pct = (abs(dif) / val_b * 100) if val_b > 0 else 0
+            if dif >
