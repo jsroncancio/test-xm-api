@@ -240,7 +240,7 @@ def reporte_integral_v2():
         ax2.set_position([new_x, pos.y0, new_w, pos.height])
         
         fig.savefig("dashboard_generacion.png", dpi=200, facecolor="white")
-        plt.close(fig))
+        plt.close(fig)
         
         print("Dashboard generado: dashboard_generacion.png")
 
