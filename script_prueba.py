@@ -194,7 +194,7 @@ def reporte_integral_v2():
             color=["black", "#FFC107"],
             width=0.4   
         )
-        ax2.set_title("Comparación diaria: Carbón vs Solar")
+        ax2.set_title("Comparación diaria: Carbón vs Solar – {fecha_final}")
         ax2.set_ylabel("GWh")
         ax2.grid(axis="y", alpha=0.3)
         
@@ -231,10 +231,16 @@ def reporte_integral_v2():
         
         ax_footer.add_artist(ab)
         
-        # Guardar
         fig.tight_layout()
+        
+        # Encoger el eje de barras DESPUÉS de tight_layout (si no, se pierde)
+        pos = ax2.get_position()
+        new_w = pos.width * 0.62          # 62% del ancho actual (ajusta 0.55–0.70)
+        new_x = pos.x0 + (pos.width - new_w) / 2
+        ax2.set_position([new_x, pos.y0, new_w, pos.height])
+        
         fig.savefig("dashboard_generacion.png", dpi=200, facecolor="white")
-        plt.close(fig)
+        plt.close(fig))
         
         print("Dashboard generado: dashboard_generacion.png")
 
