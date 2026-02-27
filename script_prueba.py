@@ -194,9 +194,13 @@ def reporte_integral_v2():
             color=["black", "#FFC107"],
             width=0.4   
         )
-        ax2.set_title("Comparación diaria: Carbón vs Solar – {fecha_final}")
+        ax2.set_title(f"Comparación diaria: Carbón vs Solar – {fecha_final}")
         ax2.set_ylabel("GWh")
         ax2.grid(axis="y", alpha=0.3)
+
+        # Que queden más juntas (menos aire a los lados)
+        ax2.set_xlim(-0.3, 1.3)
+
         
         for b in bars:
             h = b.get_height()
