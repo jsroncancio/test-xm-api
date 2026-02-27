@@ -239,7 +239,7 @@ def reporte_integral_v2():
         
         # Encoger el eje de barras DESPUÉS de tight_layout (si no, se pierde)
         pos = ax2.get_position()
-        new_w = pos.width * 0.62          # 62% del ancho actual (ajusta 0.55–0.70)
+        new_w = pos.width * 0.5          # 62% del ancho actual (ajusta 0.55–0.70)
         new_x = pos.x0 + (pos.width - new_w) / 2
         ax2.set_position([new_x, pos.y0, new_w, pos.height])
         
