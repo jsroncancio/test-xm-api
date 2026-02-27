@@ -185,21 +185,26 @@ def reporte_integral_v2():
         
         # 2) Barras
         ax2 = fig.add_subplot(gs[1, 0])
-        pos = ax2.get_position()
-        ax2.set_position([0.20, pos.y0, 0.60, pos.height])
+        
+        x = [0, 0.55]  # posiciones manuales más cercanas
+        values = [g_carbon, g_solar]
         
         bars = ax2.bar(
-            ["CARBÓN", "SOLAR"],
-            [g_carbon, g_solar],
+            x,
+            values,
             color=["black", "#FFC107"],
-            width=0.4   
+            width=0.45
         )
+
+        ax2.set_xticks(x)
+        ax2.set_xticklabels(["CARBÓN", "SOLAR"])
+
         ax2.set_title(f"Comparación diaria: Carbón vs Solar – {fecha_final}")
         ax2.set_ylabel("GWh")
         ax2.grid(axis="y", alpha=0.3)
 
         # Que queden más juntas (menos aire a los lados)
-        ax2.set_xlim(-0.3, 1.3)
+        ax2.set_xlim(-0.3, 0.85)
 
         
         for b in bars:
@@ -239,7 +244,7 @@ def reporte_integral_v2():
         
         # Encoger el eje de barras DESPUÉS de tight_layout (si no, se pierde)
         pos = ax2.get_position()
-        new_w = pos.width * 0.5          # 62% del ancho actual (ajusta 0.55–0.70)
+        new_w = pos.width * 0.7          # 62% del ancho actual (ajusta 0.55–0.70)
         new_x = pos.x0 + (pos.width - new_w) / 2
         ax2.set_position([new_x, pos.y0, new_w, pos.height])
         
