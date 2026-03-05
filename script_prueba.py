@@ -58,7 +58,7 @@ def generar_reporte_visual():
         resumen_pie = resumen.sort_values(by='gwh', ascending=False)
         ax1.pie(resumen_pie['gwh'], labels=resumen_pie['values_enersource'], 
                 colors=resumen_pie['color'], autopct='%1.1f%%', startangle=140,
-                textprops={'color':"grey" if 'black' in resumen_pie['color'].values else "black"})
+                textprops={'color':"black" if 'black' in resumen_pie['color'].values else "black"})
         ax1.set_title(f"Balance de Generación - {fecha_final}", fontsize=14, fontweight='bold')
 
         # Gráfica 2: Barras (Análisis de Brechas)
@@ -69,8 +69,8 @@ def generar_reporte_visual():
         x = np.arange(len(categorias))
         width = 0.35
         
-        ax2.bar(x - width/2, valores_renov, width, label='Renovables/FNCER', color='limegreen')
-        ax2.bar(x + width/2, valores_term, width, label='Térmica Fósil', color='salmon')
+        ax2.bar(x - width/2, valores_renov, width, label='Renovables/FNCER', color='green')
+        ax2.bar(x + width/2, valores_term, width, label='Térmica Fósil', color='red')
         
         ax2.set_ylabel('GWh')
         ax2.set_title('Comparativa de Brechas Energéticas', fontsize=14, fontweight='bold')
