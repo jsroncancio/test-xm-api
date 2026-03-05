@@ -1,1 +1,1 @@
-# test-xm-api
+![Reporte de Energía](./dashboard_generacion.png)
