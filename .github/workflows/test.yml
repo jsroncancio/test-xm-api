@@ -1,9 +1,10 @@
-name: Reporte Energético Diario
+name: Reporte Energético Diario Automático
 
 on:
   schedule:
-    - cron: '0 13 * * *' # 8:00 AM hora Bogotá (UTC-5)
-  workflow_dispatch: 
+    # 13:00 UTC es 08:00 AM en Bogotá (UTC-5)
+    - cron: '0 13 * * *'
+  workflow_dispatch: # Para que puedas probarlo con un clic ahora
 
 jobs:
   diagnostico:
@@ -21,11 +22,11 @@ jobs:
         run: |
           pip install numpy==1.23.5 pandas==1.5.3 matplotlib==3.7.5 pydataxm
 
-      - name: Ejecucion de script_prueba.py
+      - name: Ejecucion del Script
         run: python script_prueba.py
 
-      - name: Subir grafica como artefacto
+      - name: Subir Dashboard como Artefacto
         uses: actions/upload-artifact@v4
         with:
-          name: reporte-visual
-          path: reporte_energetico.png # <--- DEBE COINCIDIR CON EL NOMBRE EN EL SCRIPT
+          name: reporte-diario
+          path: dashboard_generacion.png
