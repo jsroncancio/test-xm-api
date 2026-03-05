@@ -2,14 +2,9 @@ import pandas as pd
 import numpy as np
 from pydataxm import pydataxm as nxm
 import datetime as dt
-import os
-import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
-import matplotlib.image as mpimg
-from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
-def reporte_integral_v2():
+def generar_reporte_visual():
     objetoAPI = nxm.ReadDB()
     hoy = dt.datetime.now().date()
     df_gen, df_meta, fecha_final = None, None, None
@@ -21,249 +16,81 @@ def reporte_integral_v2():
         try:
             temp_gen = objetoAPI.request_data("Gene", "Recurso", fecha_test, fecha_test)
             if temp_gen is not None and not temp_gen.empty:
-                df_gen = temp_gen
-                fecha_final = fecha_test
+                df_gen, fecha_final = temp_gen, fecha_test
                 df_meta = objetoAPI.request_data("ListadoRecursos", "Sistema", fecha_test, fecha_test)
                 break
-        except:
-            continue
+        except: continue
 
     if df_gen is None: return
 
     try:
-        # 1. Procesamiento Base
+        # 1. Procesamiento de Datos
         df_gen.columns = [c.lower() for c in df_gen.columns]
         df_meta.columns = [c.lower() for c in df_meta.columns]
         df = pd.merge(df_gen, df_meta[['values_code', 'values_enersource']], on='values_code', how='left')
-        df['kwh_dia'] = df.sum(axis=1, numeric_only=True)
+        df['gwh'] = df.sum(axis=1, numeric_only=True) / 1_000_000
         
-        # 2. Resumen Detallado (EUREKA)
-        resumen = df.groupby('values_enersource')['kwh_dia'].sum().reset_index()
-        resumen['gwh'] = resumen['kwh_dia'] / 1_000_000
+        resumen = df.groupby('values_enersource')['gwh'].sum().reset_index()
         total_dia = resumen['gwh'].sum()
-        resumen['%'] = (resumen['gwh'] / total_dia) * 100
-        resumen = resumen.sort_values(by='gwh', ascending=False)
 
-        # 3. Categorías Técnicas para Bloques
-        sol_viento_list = ['RAD SOLAR', 'VIENTO']
-        fncer_total_list = ['RAD SOLAR', 'VIENTO', 'BAGAZO', 'BIOMASA', 'BIOGAS']
-        termica_list = ['GAS', 'CARBON', 'COMBUSTOLEO', 'ACPM', 'FUELOIL']
-        
-        g_sol_viento = resumen[resumen['values_enersource'].isin(sol_viento_list)]['gwh'].sum()
-        g_fncer = resumen[resumen['values_enersource'].isin(fncer_total_list)]['gwh'].sum()
-        g_termica = resumen[resumen['values_enersource'].isin(termica_list)]['gwh'].sum()
-        g_hidro = resumen[resumen['values_enersource'] == 'AGUA']['gwh'].sum()
-
-        # 4. Función Auxiliar para Narrativa de Brechas
-        def comparativa(val_a, val_b, nom_a, nom_b):
-            dif = val_a - val_b
-            pct = (abs(dif) / val_b * 100) if val_b > 0 else 0
-            if dif > 0:
-                return f"✅ {nom_a} generó {dif:.2f} GWh más que {nom_b} (+{pct:.2f}%)"
-            elif dif < 0:
-                return f"⚠️ {nom_b} generó {abs(dif):.2f} GWh más que {nom_a} (+{pct:.2f}%)"
-            return f"⚖️ Empate exacto entre {nom_a} y {nom_b}"
-
-        # --- SALIDA AL RUN ---
-        sep = "█" * 60
-        print(f"\n{sep}")
-        print(f" 🏆 MONITOR DE TRANSICIÓN ENERGÉTICA - {fecha_final}")
-        print(sep)
-        
-        print("\n📊 1. DESGLOSE DETALLADO (EUREKA):")
-        print("-" * 60)
-        print(resumen[['values_enersource', 'gwh', '%']].to_string(index=False, float_format="{:.2f}".format))
-
-        print("\n📊 2. BALANCE POR BLOQUES:")
-        print(f"{'BLOQUE':<25} | {'GWh':<8} | {'%':<5}")
-        print("-" * 45)
-        print(f"{'☀️💨 SOL + VIENTO':<25} | {g_sol_viento:<8.2f} | {(g_sol_viento/total_dia*100):.2f}%")
-        print(f"{'🌱 FNCER TOTAL':<25} | {g_fncer:<8.2f} | {(g_fncer/total_dia*100):.2f}%")
-        print(f"{'💧 HIDROELÉCTRICA':<25} | {g_hidro:<8.2f} | {(g_hidro/total_dia*100):.2f}%")
-        print(f"{'🔥 TÉRMICA FÓSIL':<25} | {g_termica:<8.2f} | {(g_termica/total_dia*100):.2f}%")
-        
-        print("\n📈 3. ANÁLISIS DINÁMICO DE BRECHAS:")
-        print("-" * 60)
-        
-        # FNCER vs Térmica
-        print(f"🚀 FNCER vs TÉRMICA:")
-        print(f"   {comparativa(g_fncer, g_termica, 'FNCER', 'Térmica')}")
-        indice = (g_fncer / g_termica * 100) if g_termica > 0 else 100
-        print(f"   Cobertura: {indice:.2f}%")
-        
-        # Sol+Viento vs Térmica
-        print(f"\n⚡ SOL+VIENTO vs TÉRMICA:")
-        print(f"   {comparativa(g_sol_viento, g_termica, 'Sol+Viento', 'Térmica')}")
-        indice_sv = (g_sol_viento / g_termica * 100) if g_termica > 0 else 100
-        print(f"   Cobertura: {indice_sv:.2f}%")
-
-        # Cambios de Sofi*********************************************************
-        
-        # Backend sin pantalla (GitHub Actions)
-        matplotlib.use("Agg")
-        
-        # Cargar Poppins
-        font_path_regular = "Poppins-Regular.ttf"
-        font_path_bold = "Poppins-Bold.ttf"
-        
-        fm.fontManager.addfont(font_path_regular)
-        fm.fontManager.addfont(font_path_bold)
-        
-        prop_regular = fm.FontProperties(fname=font_path_regular)
-        prop_bold = fm.FontProperties(fname=font_path_bold)
-        
-        plt.rcParams["font.family"] = prop_regular.get_name()
-        
-        # Datos base
-        res = resumen.copy()
-        res["values_enersource"] = res["values_enersource"].fillna("SIN_CLASIFICAR")
-        
-        # Agrupar fuentes muy pequeñas en "OTROS"
-        umbral_pct = 1.0
-        res["pct"] = (res["gwh"] / total_dia * 100) if total_dia > 0 else 0.0
-        
-        res_grande = res[res["pct"] >= umbral_pct].copy()
-        res_peq = res[res["pct"] < umbral_pct].copy()
-        
-        if not res_peq.empty:
-            otros_gwh = float(res_peq["gwh"].sum())
-            otros_pct = float(res_peq["pct"].sum())
-            fila_otros = pd.DataFrame([{
-                "values_enersource": "OTROS",
-                "kwh_dia": np.nan,
-                "gwh": otros_gwh,
-                "%": np.nan,
-                "pct": otros_pct
-            }])
-            res_plot = pd.concat([res_grande, fila_otros], ignore_index=True)
-        else:
-            res_plot = res_grande
-        
-        res_plot = res_plot.sort_values("gwh", ascending=False)
-        
-        # Carbón vs Solar
-        g_carbon = float(res.loc[res["values_enersource"] == "CARBON", "gwh"].sum())
-        g_solar  = float(res.loc[res["values_enersource"] == "RAD SOLAR", "gwh"].sum())
-        
-        # =====================
-        # Figura: torta + barras + footer (logo + fuente)
-        # =====================
-        fig = plt.figure(figsize=(10, 10))
-        gs = fig.add_gridspec(3, 1, height_ratios=[3, 2, 0.35])
-        
-        # 1) Torta
-        ax1 = fig.add_subplot(gs[0, 0])
-        
-        labels = res_plot["values_enersource"].astype(str).tolist()
-        sizes = res_plot["gwh"].astype(float).tolist()
-        
-        def autopct_fmt(p):
-            return f"{p:.1f}%" if p >= 3 else ""
-
-        color_map = {
-            "CARBON": "black",
-            "RAD SOLAR": "#FDB813",   # amarillo tipo solar
-            "GAS": "gray",
-            "BAGAZO": "#2E7D32",      # verde
-            "OTROS": "#F57C00"
+        # 2. Definición de Bloques y Colores
+        colores_dict = {
+            'RAD SOLAR': 'yellow',
+            'VIENTO': 'aquamarine',
+            'AGUA': 'royalblue',
+            'CARBON': 'black',
+            'GAS': 'red',
+            'OTROS': 'lightgrey'
         }
         
-        colors = [color_map.get(label, "#1f77b4") for label in labels]
-                
-        ax1.pie(
-            sizes,
-            labels=None,
-            autopct=autopct_fmt,
-            startangle=90,
-            colors=colors
-        )
+        # Mapeo de nombres para la gráfica circular
+        resumen['color'] = resumen['values_enersource'].map(colores_dict).fillna('lightgrey')
         
-        ax1.set_title(f"Participación diaria por fuente (GWh) – {fecha_final}\nTotal: {total_dia:.2f} GWh")
-        
-        legend_txt = [f"{lab}: {val:.2f} GWh" for lab, val in zip(labels, sizes)]
-        ax1.legend(legend_txt, loc="center left", bbox_to_anchor=(1.02, 0.5), frameon=False)
-        
-        # 2) Barras
-        ax2 = fig.add_subplot(gs[1, 0])
-        
-        x = [0, 0.55]  # posiciones manuales más cercanas
-        values = [g_carbon, g_solar]
-        
-        bars = ax2.bar(
-            x,
-            values,
-            color=["black", "#FFC107"],
-            width=0.45
-        )
+        # 3. Cálculos de Brechas (Análisis Dinámico)
+        g_sv = resumen[resumen['values_enersource'].isin(['RAD SOLAR', 'VIENTO'])]['gwh'].sum()
+        g_fncer = resumen[resumen['values_enersource'].isin(['RAD SOLAR', 'VIENTO', 'BAGAZO', 'BIOMASA', 'BIOGAS'])]['gwh'].sum()
+        g_termica = resumen[resumen['values_enersource'].isin(['GAS', 'CARBON', 'COMBUSTOLEO', 'ACPM'])]['gwh'].sum()
 
+        # --- GENERACIÓN DE GRÁFICAS ---
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
+        
+        # Gráfica 1: Circular (Balance por Bloques)
+        resumen_pie = resumen.sort_values(by='gwh', ascending=False)
+        ax1.pie(resumen_pie['gwh'], labels=resumen_pie['values_enersource'], 
+                colors=resumen_pie['color'], autopct='%1.1f%%', startangle=140,
+                textprops={'color':"grey" if 'black' in resumen_pie['color'].values else "black"})
+        ax1.set_title(f"Balance de Generación - {fecha_final}", fontsize=14, fontweight='bold')
+
+        # Gráfica 2: Barras (Análisis de Brechas)
+        categorias = ['FNCER vs Térmica', 'Sol+Viento vs Térmica']
+        valores_renov = [g_fncer, g_sv]
+        valores_term = [g_termica, g_termica]
+        
+        x = np.arange(len(categorias))
+        width = 0.35
+        
+        ax2.bar(x - width/2, valores_renov, width, label='Renovables/FNCER', color='limegreen')
+        ax2.bar(x + width/2, valores_term, width, label='Térmica Fósil', color='salmon')
+        
+        ax2.set_ylabel('GWh')
+        ax2.set_title('Comparativa de Brechas Energéticas', fontsize=14, fontweight='bold')
         ax2.set_xticks(x)
-        ax2.set_xticklabels(["CARBÓN", "SOLAR"])
+        ax2.set_xticklabels(categorias)
+        ax2.legend()
+        ax2.grid(axis='y', linestyle='--', alpha=0.7)
 
-        ax2.set_title(f"Comparación diaria: Carbón vs Solar – {fecha_final}")
-        ax2.set_ylabel("GWh")
-        ax2.grid(axis="y", alpha=0.3)
+        # Guardar resultado
+        plt.tight_layout()
+        plt.savefig('reporte_energetico.png', dpi=300)
+        print("✅ Reporte visual generado: reporte_energetico.png")
 
-        # Que queden más juntas (menos aire a los lados)
-        ax2.set_xlim(-0.3, 0.85)
-
-        
-        for b in bars:
-            h = b.get_height()
-            ax2.text(b.get_x() + b.get_width()/2, h, f"{h:.2f}", ha="center", va="bottom", fontsize=10)
-        
-        # 3) Footer (logo + fuente)
-        ax_footer = fig.add_subplot(gs[2, 0])
-        ax_footer.axis("off")
-        
-        # Fuente alineada a la derecha
-        ax_footer.text(
-            0.98, 0.15,
-            "Fuente: XM (datos de generación del SIN). Elaboración propia.",
-            ha="right",
-            va="bottom",
-            fontsize=9,
-            transform=ax_footer.transAxes
-        )
-        
-        # Logo pequeño a la izquierda
-
-        
-        logo = mpimg.imread("Logo-PNG.png")
-        imagebox = OffsetImage(logo, zoom=0.16)  # ajusta tamaño si quieres más pequeño
-        
-        ab = AnnotationBbox(
-            imagebox,
-            (0.08, 0.55),              # izquierda dentro del footer
-            xycoords=ax_footer.transAxes,
-            frameon=False
-        )
-        
-        ax_footer.add_artist(ab)
-        
-        fig.tight_layout()
-        
-        # Encoger el eje de barras DESPUÉS de tight_layout (si no, se pierde)
-        pos = ax2.get_position()
-        new_w = pos.width * 0.7          # 62% del ancho actual (ajusta 0.55–0.70)
-        new_x = pos.x0 + (pos.width - new_w) / 2
-        ax2.set_position([new_x, pos.y0, new_w, pos.height])
-        
-        fig.savefig("dashboard_generacion.png", dpi=200, facecolor="white")
-        plt.close(fig)
-        
-        print("Dashboard generado: dashboard_generacion.png")
-
-        # Cambios de Sofi*********************************************************
-
-        
-        print(f"\n{sep}")
-        print(f" GENERACIÓN TOTAL: {total_dia:.2f} GWh")
-        print(f"{sep}\n")
-
-        
+        # Mantener salida en consola
+        print(f"\n🏆 RESUMEN EJECUTIVO - {fecha_final}")
+        print(f"Total Generado: {total_dia:.2f} GWh")
+        print(f"Brecha FNCER vs Térmica: {g_fncer - g_termica:.2f} GWh")
 
     except Exception as e:
         print(f"❌ Error: {e}")
 
 if __name__ == "__main__":
-    reporte_integral_v2()
+    generar_reporte_visual()
