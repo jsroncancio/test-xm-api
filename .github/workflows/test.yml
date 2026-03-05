@@ -1,32 +1,25 @@
-name: Reporte Energético Diario Automático
+name: Dashboard Energetico 8AM
 
 on:
   schedule:
-    # 13:00 UTC es 08:00 AM en Bogotá (UTC-5)
-    - cron: '0 13 * * *'
-  workflow_dispatch: # Para que puedas probarlo con un clic ahora
+    - cron: '0 13 * * *' # 8:00 AM Bogotá
+  workflow_dispatch: 
 
 jobs:
-  diagnostico:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout del repositorio
-        uses: actions/checkout@v4
-
-      - name: Configurar Python
+      - uses: actions/checkout@v4
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-
-      - name: Instalacion de dependencias
-        run: |
-          pip install numpy==1.23.5 pandas==1.5.3 matplotlib==3.7.5 pydataxm
-
-      - name: Ejecucion del Script
+      - name: Dependencies
+        run: pip install numpy==1.23.5 pandas==1.5.3 matplotlib==3.7.5 pydataxm
+      - name: Run
         run: python script_prueba.py
-
-      - name: Subir Dashboard como Artefacto
+      - name: Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: reporte-diario
+          name: reporte-tecnico
           path: dashboard_generacion.png
