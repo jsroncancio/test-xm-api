@@ -2,15 +2,14 @@ name: Reporte Energético Diario
 
 on:
   schedule:
-    # 13:00 UTC corresponde a las 08:00 AM hora Bogotá (UTC-5)
-    - cron: '0 13 * * *'
-  workflow_dispatch: # Permite ejecución manual
+    - cron: '0 13 * * *' # 8:00 AM hora Bogotá (UTC-5)
+  workflow_dispatch: 
 
 jobs:
-  ejecucion:
+  diagnostico:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repositorio
+      - name: Checkout del repositorio
         uses: actions/checkout@v4
 
       - name: Configurar Python
@@ -18,15 +17,15 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Instalar dependencias
+      - name: Instalacion de dependencias
         run: |
-          pip install pandas numpy matplotlib pydataxm
+          pip install numpy==1.23.5 pandas==1.5.3 matplotlib==3.7.5 pydataxm
 
-      - name: Ejecutar Script
+      - name: Ejecucion de script_prueba.py
         run: python script_prueba.py
 
-      - name: Guardar Gráfica
+      - name: Subir grafica como artefacto
         uses: actions/upload-artifact@v4
         with:
           name: reporte-visual
-          path: reporte_energetico.png
+          path: reporte_energetico.png # <--- DEBE COINCIDIR CON EL NOMBRE EN EL SCRIPT
