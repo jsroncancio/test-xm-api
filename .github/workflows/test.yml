@@ -8,18 +8,24 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # Permiso vital para que el robot pueda subir la imagen
     steps:
       - uses: actions/checkout@v4
+      
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          
       - name: Dependencies
         run: pip install numpy==1.23.5 pandas==1.5.3 matplotlib==3.7.5 pydataxm
-      - name: Run
+        
+      - name: Run Script
         run: python script_prueba.py
-      - name: Artifact
-        uses: actions/upload-artifact@v4
+        
+      - name: Publicar Imagen en el Repositorio
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          name: reporte-tecnico
-          path: dashboard_generacion.png
+          commit_message: "📊 Actualización diaria: Dashboard de Generación"
+          file_pattern: 'dashboard_generacion.png'
