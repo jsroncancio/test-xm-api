@@ -77,7 +77,7 @@ def generar_dashboard_tecnico():
         colors = [col_map.get(x, '#BDC3C7') for x in res_sorted['values_enersource']]
         
         bars = ax1.barh(res_sorted['values_enersource'], res_sorted['gwh'], color=colors, edgecolor='#566573', linewidth=1)
-        ax1.set_title("Particiapación Diaria por Fuente de Generación SIN (GWh)   FUENTE: XM", fontsize=16, fontweight='bold', pad=15)
+        ax1.set_title("Particiapación Diaria por Fuente de Generación SIN (GWh) - Fuente: XM (datos de generación del SIN). Elaboración propia.", fontsize=16, fontweight='bold', pad=15)
         for b in bars:
             ax1.text(b.get_width()+0.8, b.get_y()+b.get_height()/2, f'{b.get_width():.2f}', va='center', fontsize=11, fontweight='bold')
 
